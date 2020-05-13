@@ -1,0 +1,61 @@
+---
+title: "Medical Terminology Chronology"
+author: "Jackson M Luckey"
+date: "5/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r loadPackages}
+library(tidyverse)
+library(tidynlm)
+```
+
+```{r opioidData}
+term_df <- function(term) {
+  tmp <- searchnlm(term, retmax = 10000, output = "wide", collapse_to_first = TRUE)
+  tmp$term <- term
+  tmp
+}
+terms <- c("opioid", "opium", "heroin", "poppy", "opiate", "narcotic", "fentanyl", "morphine", "diacetylmorphine", "laudanum")
+opioids <- map_dfr(terms, term_df)
+```
+
+```{r opioidTermCount}
+opioids %>%
+  group_by(term) %>%
+  count() %>%
+  arrange(desc(n))
+```
+
+```{r fixOpioidDate}
+opioids <- opioids %>% mutate(date = parse_number(date))
+```
+
+```{r opioidTermTimeseries}
+opioids %>%
+  # filter out uncommon terms -> makes legend more legible
+  filter(term %in% c("narcotic", "opiate", "opium", "poppy", "morphine")) %>%
+  ggplot(aes(x = date, color = term)) +
+  geom_density() +
+  theme_classic() +
+  xlim(1750, 2020) +
+  scale_color_viridis_d() +
+  labs(title = "Changes in Opioid Medical Terminology Over Time",
+       subtitle = "National Library of Medicine Archives",
+       y = "",
+       x = "Date",
+       color = "Opioid Term") +
+  # add history
+  geom_vline(xintercept = 1865) + # End of civil war; Start of soldier's disease
+  geom_vline(xintercept = 1914) + # Harrison Narcotic Act
+  annotate(
+    "label",
+    x = c(1845, 1930),
+    y = 0.02,
+    label = c("End of Civil War", "Harrison Narcotic Act")
+  )
+```

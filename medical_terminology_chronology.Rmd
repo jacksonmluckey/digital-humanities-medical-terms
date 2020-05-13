@@ -14,6 +14,8 @@ library(tidyverse)
 library(tidynlm)
 ```
 
+## Opioids
+
 ```{r opioidData}
 term_df <- function(term) {
   tmp <- searchnlm(term, retmax = 10000, output = "wide", collapse_to_first = TRUE)
@@ -23,6 +25,17 @@ term_df <- function(term) {
 terms <- c("opioid", "opium", "heroin", "poppy", "opiate", "narcotic", "fentanyl", "morphine", "diacetylmorphine", "laudanum")
 opioids <- map_dfr(terms, term_df)
 ```
+
+define opioids
+
+### List of Opioid Terminology
+```{r, results="asis", echo=FALSE}
+# creates a rmarkown list
+# "" ensures that the first term is part of the list (due to "\n -")
+cat("", terms, sep = "\n - ")
+```
+
+### Opioid Terminology Count
 
 ```{r opioidTermCount}
 opioids %>%
@@ -34,6 +47,8 @@ opioids %>%
 ```{r fixOpioidDate}
 opioids <- opioids %>% mutate(date = parse_number(date))
 ```
+
+### Opioid Terminology Timeseries
 
 ```{r opioidTermTimeseries}
 opioids %>%
